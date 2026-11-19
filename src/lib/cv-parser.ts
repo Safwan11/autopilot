@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
 export interface ParsedCv {
@@ -45,7 +44,10 @@ const TITLE_PATTERNS = [
 export async function extractText(buf: Buffer, fileName: string, mime: string): Promise<string> {
   const filePath = fileName;
   if (mime === "application/pdf" || filePath.toLowerCase().endsWith(".pdf")) {
-    const parser = new PDFParse({ data: buf });
+    // Load the worker entry first: it polyfills DOMMatrix etc. (via @napi-rs/canvas) that pdfjs needs on serverless Node.
+    const { CanvasFactory } = await import("pdf-parse/worker");
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: buf, CanvasFactory });
     const data = await parser.getText();
     return data.text || "";
   }
