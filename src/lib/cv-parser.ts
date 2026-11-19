@@ -1,6 +1,5 @@
 import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
-import fs from "node:fs";
 
 export interface ParsedCv {
   rawText: string;
@@ -43,8 +42,8 @@ const TITLE_PATTERNS = [
   /software implementation/i,
 ];
 
-export async function extractText(filePath: string, mime: string): Promise<string> {
-  const buf = fs.readFileSync(filePath);
+export async function extractText(buf: Buffer, fileName: string, mime: string): Promise<string> {
+  const filePath = fileName;
   if (mime === "application/pdf" || filePath.toLowerCase().endsWith(".pdf")) {
     const parser = new PDFParse({ data: buf });
     const data = await parser.getText();

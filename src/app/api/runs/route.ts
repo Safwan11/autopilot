@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { db } from "@/lib/db";
 import { discoverJobs, stripHtml } from "@/lib/job-search";
 import { scoreJob } from "@/lib/ai-matcher";
-import { buildExcelReport } from "@/lib/excel-export";
-import fs from "node:fs";
+
+export const maxDuration = 300;
 
 export async function GET() {
+  await connection();
   const user = await db.user.findUnique({ where: { email: "demo@autopilot.local" } });
   if (!user) return NextResponse.json({ runs: [] });
   const runs = await db.agentRun.findMany({ where: { userId: user.id }, orderBy: { startedAt: "desc" }, take: 50 });
@@ -80,11 +81,7 @@ export async function POST(req: Request) {
     await db.sourceChecked.updateMany({ where: { runId: run.id, website: rj.source }, data: { vacanciesFound: { increment: 1 }, vacanciesKept: { increment: 1 } } });
   }
 
-  const reportsDir = "reports";
-  fs.mkdirSync(reportsDir, { recursive: true });
-  const reportPath = `${reportsDir}/autopilot-run-${run.id}.xlsx`;
-  const buf = await buildExcelReport(run.id);
-  fs.writeFileSync(reportPath, buf);
+  const reportPath = `/api/excel?runId=${run.id}`;
   await db.agentRun.update({ where: { id: run.id }, data: { reportPath, status: "Completed", completedAt: new Date(), jobsFound: rawJobs.length } });
 
   return NextResponse.json({ runId: run.id, jobsFound: rawJobs.length, reportPath });

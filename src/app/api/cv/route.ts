@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { extractText, parseCv } from "@/lib/cv-parser";
-import fs from "node:fs";
-import path from "node:path";
+
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const form = await req.formData();
@@ -10,15 +10,13 @@ export async function POST(req: Request) {
   const userId = (form.get("userId") as string) || "demo";
   if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
-  const uploadsDir = path.join(process.cwd(), "uploads");
-  fs.mkdirSync(uploadsDir, { recursive: true });
+  // Serverless hosts have no persistent disk: parse the CV in memory and keep only the extracted text.
   const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-  const filePath = path.join(uploadsDir, safeName);
+  const filePath = `memory://${safeName}`;
   const buf = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(filePath, buf);
 
   const mime = file.type || "application/octet-stream";
-  const rawText = await extractText(filePath, mime);
+  const rawText = (await extractText(buf, file.name, mime)).replace(/\u0000/g, "");
   const parsed = parseCv(rawText);
 
   // ensure user exists
