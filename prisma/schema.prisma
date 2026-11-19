@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cvs            Cv[]
+  profile        ProfessionalProfile?
+  preferences    WorkPreferences?
+  jobs           Job[]
+  applications   Application[]
+  answerLibrary  AnswerLibraryItem[]
+  runs           AgentRun[]
+  employers      Employer[]
+}
+
+model Cv {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName  String
+  filePath  String
+  rawText   String
+  parsed    Json
+  version   Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProfessionalProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  primaryTitle  String?
+  titles        String   @default("[]")
+  skills        String   @default("[]")
+  experience    String   @default("[]")
+  education     String   @default("[]")
+  certifications String  @default("[]")
+  languages     String   @default("[]")
+  yearsExp      Int?
+  summary       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model WorkPreferences {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  countries        String   @default("[]")
+  cities           String   @default("[]")
+  remote           Boolean  @default(true)
+  hybrid           Boolean  @default(true)
+  onsite           Boolean  @default(true)
+  employmentTypes  String   @default("[]")
+  minSalary        Int?
+  maxSalary        Int?
+  currency         String?
+  visaSponsorship  Boolean  @default(false)
+  workAuthorization String?
+  noticePeriod     String?
+  availability     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Employer {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  country     String?
+  industry    String?
+  careersUrl  String?
+  portal      String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  jobs        Job[]
+}
+
+model Job {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalId      String?
+  employerId      String?
+  employer        Employer? @relation(fields: [employerId], references: [id])
+  title           String
+  company         String
+  location        String
+  country         String?
+  city            String?
+  remoteType      String?
+  employmentType  String?
+  salary          String?
+  currency        String?
+  datePosted      DateTime?
+  deadline        DateTime?
+  source          String
+  sourceUrl       String   @unique
+  applicationUrl  String?
+  description     String
+  matchScore      Int?
+  matchClass      String?
+  strongSkills    String   @default("[]")
+  missingReqs     String   @default("[]")
+  visaSponsorship String?
+  workAuth        String?
+  languages       String   @default("[]")
+  requiredExp     String?
+  isDuplicate     Boolean  @default(false)
+  duplicateOfId   String?
+  status          String   @default("Discovered")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  applications    Application[]
+}
+
+model Application {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId             String
+  job               Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  cvId              String?
+  cvVersion         Int?
+  coverLetter       String?
+  status            String   @default("Started")
+  mode              String   @default("REVIEW")
+  matchScore        Int?
+  submittedAt       DateTime?
+  confirmationRef   String?
+  followUpDate      DateTime?
+  errorReason       String?
+  captchaEncountered Boolean  @default(false)
+  loginRequired     Boolean  @default(false)
+  userActionRequired Boolean @default(false)
+  retryEligible     Boolean  @default(false)
+  answersSubmitted  String   @default("[]")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  attempts          ApplicationAttempt[]
+}
+
+model ApplicationAttempt {
+  id             String      @id @default(cuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  attemptedAt    DateTime    @default(now())
+  website        String
+  status         String
+  stage          String?
+  questionsAnswered String   @default("[]")
+  missingInfo    String?
+  failureReason  String?
+  captcha        Boolean     @default(false)
+  loginRequired  Boolean     @default(false)
+  userActionReq  Boolean     @default(false)
+  retryEligible  Boolean     @default(false)
+}
+
+model AnswerLibraryItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AgentRun {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  mode        String
+  status      String   @default("Running")
+  jobsFound   Int      @default(0)
+  jobsApplied Int      @default(0)
+  jobsFailed  Int      @default(0)
+  log         String   @default("[]")
+  reportPath  String?
+}
+
+model SourceChecked {
+  id            String   @id @default(cuid())
+  runId         String
+  website       String
+  countryPortal String?
+  searchTerms   String
+  jobCategories String   @default("[]")
+  searchedAt    DateTime @default(now())
+  postingFilter String?
+  pagesVisited  Int      @default(0)
+  vacanciesFound Int     @default(0)
+  vacanciesKept Int      @default(0)
+  loginRequired Boolean  @default(false)
+  captcha       Boolean  @default(false)
+  automationOk  Boolean  @default(true)
+  searchDepth   String?
+  blockingIssues String?
+  userActionReq Boolean  @default(false)
+  notes         String?
+}
