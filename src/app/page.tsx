@@ -5,8 +5,8 @@ import { Logo } from "@/components/logo";
 import { ButtonLink, Notice } from "@/components/ui";
 
 const FEATURES = [
-  { icon: FileText, title: "Reads your CV", body: "Upload a PDF or Word CV. Autopilot pulls out your titles, skills, experience and contact details into a profile you can edit." },
-  { icon: Radar, title: "Searches for you", body: "Runs your target titles across Remotive, Arbeitnow, Himalayas, Jobicy and Remote OK, plus one-click searches on LinkedIn, Bayt and GulfTalent." },
+  { icon: FileText, title: "Reads your CV", body: "Upload a PDF or Word CV. JobPilot pulls out your titles, skills, experience and contact details into a profile you can edit." },
+  { icon: Radar, title: "Searches for you", body: "Searches LinkedIn, Bayt, GulfTalent, Wuzzuf and five remote-job boards in your countries, plus one-click searches on Glassdoor, Indeed, Naukrigulf and more." },
   { icon: Gauge, title: "Scores every role", body: "Each job gets a 0–100 match on skills, title, location and seniority, with the gaps spelled out. Add an AI key for Claude-powered scoring." },
   { icon: PenLine, title: "Drafts cover letters", body: "Tailored letters from your real experience, plus a library of saved answers for those repeated application questions." },
   { icon: KanbanSquare, title: "Tracks applications", body: "Applied, interviewing, offer, rejected. Follow-up reminders so nothing goes quiet without you noticing." },
@@ -34,7 +34,7 @@ export default async function Home(props: PageProps<"/">) {
               <span className="size-1.5 rounded-full bg-accent" /> Your personal job-search agent
             </p>
             <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
-              Upload your CV once.<br />Let Autopilot find the jobs worth applying to.
+              Upload your CV once.<br />Let JobPilot find the jobs worth applying to.
             </h1>
             <p className="mt-5 max-w-xl text-lg text-ink-2">
               It searches job boards, scores every role against your experience, writes the cover letter and keeps track of where you applied.
@@ -57,7 +57,7 @@ export default async function Home(props: PageProps<"/">) {
           ))}
         </section>
 
-        <footer className="py-12 text-center text-sm text-mute">Autopilot · built by Muslim Tech</footer>
+        <footer className="py-12 text-center text-sm text-mute">JobPilot · built by Muslim Tech</footer>
       </main>
     </div>
   );

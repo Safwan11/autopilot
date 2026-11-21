@@ -47,7 +47,8 @@ export const preferences = pgTable("preferences", {
   minScore: integer("min_score").notNull().default(55),
   excludeKeywords: jsonb("exclude_keywords").$type<string[]>().notNull().default([]),
   excludeCompanies: jsonb("exclude_companies").$type<string[]>().notNull().default([]),
-  sources: jsonb("sources").$type<string[]>().notNull().default([]),
+  sources: jsonb("sources").$type<string[]>().notNull().default([]), // automatic sources; [] = all
+  linkSources: jsonb("link_sources").$type<string[] | null>(), // quick-search sites; null = all
   maxAgeDays: integer("max_age_days").notNull().default(30),
   autoSearch: boolean("auto_search").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

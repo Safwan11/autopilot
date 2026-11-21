@@ -7,7 +7,7 @@ import { preferences, profiles, sessions, users } from "@/db/schema";
 import { destroySession, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { splitList } from "@/lib/text";
 import { rescoreAll } from "@/lib/search";
-import { SOURCES } from "@/lib/sources";
+import { AUTO_SOURCES, LINK_SOURCES } from "@/lib/sources";
 
 export type FormState = { ok?: string; error?: string } | undefined;
 
@@ -48,8 +48,11 @@ export async function savePreferences(_: FormState, f: FormData): Promise<FormSt
   const user = await requireUser();
   const keywords = splitList(String(f.get("keywords") ?? "")).slice(0, 8);
   if (!keywords.length) return { error: "Add at least one job title or keyword to search for." };
-  const sources = SOURCES.map((s) => s.id).filter((id) => f.get(`source_${id}`) === "on");
-  if (!sources.length) return { error: "Turn on at least one job source." };
+  const picked = AUTO_SOURCES.map((s) => s.id).filter((id) => f.get(`source_${id}`) === "on");
+  if (!picked.length) return { error: "Turn on at least one site for automatic search." };
+  const sources = picked.length === AUTO_SOURCES.length ? [] : picked; // [] = all, so new sites are included automatically
+  const links = LINK_SOURCES.map((s) => s.id).filter((id) => f.get(`link_${id}`) === "on");
+  const linkSources = links.length === LINK_SOURCES.length ? null : links;
   const values = {
     keywords,
     locations: splitList(String(f.get("locations") ?? "")).slice(0, 12),
@@ -61,6 +64,7 @@ export async function savePreferences(_: FormState, f: FormData): Promise<FormSt
     excludeKeywords: splitList(String(f.get("excludeKeywords") ?? "")).slice(0, 30),
     excludeCompanies: splitList(String(f.get("excludeCompanies") ?? "")).slice(0, 30),
     sources,
+    linkSources,
     autoSearch: f.get("autoSearch") === "on",
     updatedAt: new Date(),
   };

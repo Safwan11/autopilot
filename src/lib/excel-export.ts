@@ -26,7 +26,7 @@ export async function buildWorkbook(userId: string): Promise<Buffer> {
   ]);
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Autopilot";
+  wb.creator = "JobPilot";
   wb.created = new Date();
 
   // Summary

@@ -1,5 +1,5 @@
 {
-    "name": "autopilot",
+    "name": "jobpilot",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -19,6 +19,7 @@
         "lucide-react": "^1.75.0",
         "mammoth": "^1.13.0",
         "next": "16.4.6",
+        "node-html-parser": "^9.0.7",
         "pdf-parse": "^2.4.5",
         "pg": "^8.23.1",
         "react": "19.3.0",

@@ -2,11 +2,14 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { preferences, profiles } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
-import { SOURCES } from "@/lib/sources";
+import { AUTO_SOURCES, LINK_SOURCES, enabledAuto, enabledLinks } from "@/lib/sources";
 import { Card, PageHeader } from "@/components/ui";
 import { PreferencesForm } from "@/components/preferences-form";
+import { SourceHealth } from "@/components/source-health";
 
 export const metadata = { title: "Preferences" };
+
+const pick = ({ id, name, description, region }: { id: string; name: string; description: string; region: string }) => ({ id, name, description, region });
 
 export default async function PreferencesPage() {
   const user = await requireUser();
@@ -24,19 +27,24 @@ export default async function PreferencesPage() {
     maxAgeDays: prefs?.maxAgeDays ?? 30,
     excludeKeywords: prefs?.excludeKeywords ?? [],
     excludeCompanies: prefs?.excludeCompanies ?? [],
-    sources: prefs?.sources ?? [],
     autoSearch: prefs?.autoSearch ?? false,
+    autoOn: enabledAuto(prefs?.sources).map((s) => s.id),
+    linksOn: enabledLinks(prefs?.linkSources).map((s) => s.id),
   };
   return (
     <>
-      <PageHeader title="Preferences" description="Tell Autopilot what to look for. Saving re-scores every job you already have." />
-      <Card>
-        <PreferencesForm
-          prefs={value}
-          sources={SOURCES.map(({ id, name, description }) => ({ id, name, description }))}
-          cronReady={Boolean(process.env.CRON_SECRET)}
-        />
-      </Card>
+      <PageHeader title="Preferences" description="Tell JobPilot what to look for and where. Saving re-scores every job you already have." />
+      <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
+        <Card>
+          <PreferencesForm
+            prefs={value}
+            autoSources={AUTO_SOURCES.map(pick)}
+            linkSources={LINK_SOURCES.map(pick)}
+            cronReady={Boolean(process.env.CRON_SECRET)}
+          />
+        </Card>
+        <aside><SourceHealth /></aside>
+      </div>
     </>
   );
 }

@@ -9,7 +9,7 @@ export function Logo({ dark = false, href = "/" }: { dark?: boolean; href?: stri
           <path d="M3 12h4l3-8 4 16 3-8h4" />
         </svg>
       </span>
-      Autopilot
+      JobPilot
     </Link>
   );
 }

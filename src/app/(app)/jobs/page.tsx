@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { and, desc, eq, gte, ilike, or, sql, type SQL } from "drizzle-orm";
-import { Download, Search, ExternalLink, Briefcase } from "lucide-react";
+import { Download, Search, Briefcase } from "lucide-react";
 import { db } from "@/db";
 import { jobs, preferences, profiles, runs } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
-import { boardLinks, SOURCES } from "@/lib/sources";
+import { ALL_SOURCES, AUTO_SOURCES, enabledAuto, enabledLinks } from "@/lib/sources";
+import { resolveCountries } from "@/lib/countries";
+import { QuickLinks, type LinkMatrix } from "@/components/quick-links";
 import { searchQueries } from "@/lib/search";
 import { ago } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -56,6 +58,17 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
   ]);
   const count = (s: string) => counts.filter((c) => (s === "active" ? ["new", "saved"].includes(c.status) : c.status === s)).reduce((a, c) => a + c.n, 0);
   const queries = searchQueries(profile, prefs);
+  const countries = resolveCountries(prefs?.locations).slice(0, 4);
+  const places = [...countries.map((c) => ({ code: c.code, name: c.name })), { code: "", name: "Anywhere" }];
+  const linkMatrix: LinkMatrix = {
+    keywords: queries,
+    places,
+    links: enabledLinks(prefs?.linkSources).map((l) => ({
+      id: l.id, name: l.name, region: l.region,
+      urls: Object.fromEntries(queries.flatMap((kw, i) => places.map((p) => [`${i}|${p.code}`, l.url(kw, countries.find((c) => c.code === p.code) ?? null)]))),
+    })),
+  };
+  const sourceNames = [...new Set(ALL_SOURCES.filter((x) => x.kind === "auto").map((x) => x.name))];
   const pages = Math.max(1, Math.ceil(total / PAGE));
   const qs = (patch: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
@@ -73,7 +86,12 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
         actions={
           <>
             <ButtonLink href="/api/export" variant="secondary" prefetch={false}><Download className="size-4" />Excel</ButtonLink>
-            <RunSearchButton compact disabledReason={queries.length ? undefined : "Add job titles in Preferences first"} />
+            <RunSearchButton
+              compact
+              disabledReason={queries.length ? undefined : "Add job titles in Preferences first"}
+              sources={AUTO_SOURCES.map(({ id, name, region }) => ({ id, name, region }))}
+              defaultOn={enabledAuto(prefs?.sources).map((x) => x.id)}
+            />
           </>
         }
       />
@@ -106,7 +124,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
             </Select>
             <Select name="source" defaultValue={source} className="w-auto">
               <option value="">All sources</option>
-              {SOURCES.map((s) => <option key={s.id}>{s.name}</option>)}
+              {sourceNames.map((n) => <option key={n}>{n}</option>)}
             </Select>
             <Select name="sort" defaultValue={sort} className="w-auto">
               <option value="score">Best match</option>
@@ -144,28 +162,12 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
 
         <aside className="space-y-5">
           <Card className="p-4">
-            <h3 className="text-sm font-semibold">Search other job boards</h3>
-            <p className="mt-1 text-xs text-mute">These sites have no open API, so these links open your search on each one.</p>
+            <h3 className="text-sm font-semibold">Search other sites</h3>
+            <p className="mt-1 mb-3 text-xs text-mute">Open your search on sites that block automated search. Choose which in <Link href="/preferences" className="underline">Preferences</Link>.</p>
             {queries.length ? (
-              <div className="mt-3 space-y-3">
-                {queries.slice(0, 3).map((kw) => {
-                  const loc = prefs?.locations?.[0] ?? "";
-                  return (
-                    <div key={kw}>
-                      <div className="mb-1.5 text-xs font-medium text-ink-2">{kw}{loc ? ` · ${loc}` : ""}</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {boardLinks(kw, loc).map((l) => (
-                          <a key={l.name} href={l.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-xs hover:border-line-2 hover:bg-paper">
-                            {l.name}<ExternalLink className="size-3 text-mute" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              linkMatrix.links.length ? <QuickLinks data={linkMatrix} /> : <p className="text-sm text-mute">All quick-search sites are turned off.</p>
             ) : (
-              <p className="mt-3 text-sm text-mute">Add search titles in <Link href="/preferences" className="underline">Preferences</Link>.</p>
+              <p className="text-sm text-mute">Add search titles in <Link href="/preferences" className="underline">Preferences</Link>.</p>
             )}
           </Card>
           {lastRun && Object.keys(lastRun.sourceStats ?? {}).length > 0 && (

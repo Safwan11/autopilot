@@ -16,7 +16,7 @@ export default async function ProfilePage(props: PageProps<"/profile">) {
 
   return (
     <>
-      <PageHeader title="Profile & CV" description="Autopilot matches jobs against this profile. Upload your CV to fill it in, then fix anything it got wrong." />
+      <PageHeader title="Profile & CV" description="JobPilot matches jobs against this profile. Upload your CV to fill it in, then fix anything it got wrong." />
       {sp.welcome && !profile && (
         <div className="mb-5"><Notice tone="good">Welcome, {user.name}! Start by uploading your CV — it takes a few seconds.</Notice></div>
       )}

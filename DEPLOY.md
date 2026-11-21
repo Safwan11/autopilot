@@ -1,6 +1,6 @@
-# Deploying Autopilot
+# Deploying JobPilot
 
-Production runs on **Vercel** (team "Muslim Tech", project `autopilot`) with a **Neon Postgres** database (`autopilot-db`) connected from Vercel's Storage tab. Every push to `main` deploys automatically.
+Production runs on **Vercel** (team "Muslim Tech", project `jobpilot` (domain jobpilot-app.vercel.app)) with a **Neon Postgres** database (`autopilot-db`) connected from Vercel's Storage tab. Every push to `main` deploys automatically.
 
 - Neon injects `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
 - `npm run build` runs `scripts/migrate.mjs` first, so new tables/columns are applied on deploy.

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, desc, eq } from "drizzle-orm";
-import { ArrowLeft, MapPin, Banknote, Clock, Building2, Briefcase } from "lucide-react";
+import { ArrowLeft, MapPin, Banknote, Clock, Building2, Briefcase, ExternalLink } from "lucide-react";
 import { db } from "@/db";
 import { answers, applications, jobs } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
@@ -94,6 +94,21 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
               </div>
             )}
             <ApplyPanel jobId={job.id} applyUrl={job.applyUrl || job.url} applied={Boolean(app)} aiAvailable={aiEnabled()} />
+          </Card>
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold">Research {job.company}</h3>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {[
+                { n: "Glassdoor reviews", u: `https://www.glassdoor.com/Search/results.htm?keyword=${encodeURIComponent(job.company)}` },
+                { n: "LinkedIn", u: `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(job.company)}` },
+                { n: "Website", u: `https://www.google.com/search?q=${encodeURIComponent(job.company + " official website")}` },
+                { n: "Salaries", u: `https://www.google.com/search?q=${encodeURIComponent(`${job.title} salary ${job.location ?? ""}`)}` },
+              ].map((l) => (
+                <a key={l.n} href={l.u} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-xs hover:border-line-2 hover:bg-paper">
+                  {l.n}<ExternalLink className="size-3 text-mute" />
+                </a>
+              ))}
+            </div>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between">
