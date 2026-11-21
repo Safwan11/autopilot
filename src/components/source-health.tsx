@@ -33,7 +33,7 @@ export async function SourceHealth() {
                 <span className={cn("size-2 rounded-full", !h ? "bg-line-2" : h.ok ? "bg-accent" : "bg-bad")} />
                 {s.name}
               </span>
-              <span className="text-xs text-mute">{!h ? "not used yet" : h.ok ? `${h.found} found · ${ago(h.at)}` : `blocked · ${ago(h.at)}`}</span>
+              <span className="text-xs text-mute">{!h ? "not used yet" : h.ok ? `${h.found} found · ${ago(h.at)}` : `blocked · use importer`}</span>
             </li>
           );
         })}

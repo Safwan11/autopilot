@@ -163,7 +163,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
         <aside className="space-y-5">
           <Card className="p-4">
             <h3 className="text-sm font-semibold">Search other sites</h3>
-            <p className="mt-1 mb-3 text-xs text-mute">Open your search on sites that block automated search. Choose which in <Link href="/preferences" className="underline">Preferences</Link>.</p>
+            <p className="mt-1 mb-3 text-xs text-mute">Open your search on sites that block automated search, then use the <Link href="/importer" className="underline">browser importer</Link> to send the results to JobPilot.</p>
             {queries.length ? (
               linkMatrix.links.length ? <QuickLinks data={linkMatrix} /> : <p className="text-sm text-mute">All quick-search sites are turned off.</p>
             ) : (

@@ -42,7 +42,7 @@ export function RunSearchButton({
       setResult({
         tone: (failed.length || blocked.length) && !r.jobsFound ? "warn" : "good",
         text: `Found ${r.jobsFound} jobs, ${r.jobsNew} new, ${r.jobsMatched} good matches.` +
-          (blocked.length ? ` ${blocked.join(", ")} blocked automated search — use their links under “Search other sites”.` : "") +
+          (blocked.length ? ` ${blocked.join(", ")} blocked our server — open them from “Search other sites” and send results with the browser importer.` : "") +
           (failed.length ? ` ${failed.join(", ")} didn't respond this time.` : ""),
       });
       router.refresh();

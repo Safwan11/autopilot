@@ -10,6 +10,7 @@ Upload your CV once. JobPilot builds your profile, searches job boards, scores e
 - **Preferences** — target titles, locations, remote/hybrid/on-site, exclusions (keywords & companies), job age limit, sources, daily auto-search.
 - **Job search (searched automatically, all selectable)** — LinkedIn (public listings + full descriptions for top matches), Bayt, GulfTalent, Wuzzuf, Remotive, Arbeitnow, Himalayas, Jobicy, Remote OK. Country-aware (Egypt, Saudi Arabia, UAE, Qatar, Kuwait, Oman, Bahrain, Jordan), de-duplicated, freshness-filtered, with per-site status. Pick sites per search or set defaults.
 - **Quick-search links (selectable)** — LinkedIn, Bayt, Wuzzuf, Glassdoor, GulfTalent, Naukrigulf, foundit Gulf, Indeed (country sites), Google Jobs — for sites that block automated search.
+- **Browser importer** — Chrome/Edge extension (`extension/`, downloadable at `/jobpilot-extension.zip`) that sends listings from Bayt, GulfTalent and Wuzzuf search pages, and any single job page with schema.org JobPosting data, to `/api/import` using a personal token.
 - **Site status** — `/api/status` checks every automatic source (cached 6 h).
 - **Matching** — 0–100 score from skills (45%), title (30%), location & mode (15%), seniority (10%), with matched skills, gaps and an explanation. With `ANTHROPIC_API_KEY`, Claude re-scores the top 10 of each search.
 - **Jobs board** — tabs (open / saved / applied / hidden), search, score/mode/source filters, sort, pagination.

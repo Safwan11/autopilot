@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+    <strong>JobPilot</strong>
+    <button id="openSettings" class="link" title="Settings">Settings</button>
+  </header>
+
+  <section id="settings" hidden>
+    <h2>Connect to JobPilot</h2>
+    <p class="mute">In JobPilot, open <b>Browser importer</b> and create a token. Paste it here.</p>
+    <label>JobPilot address<input id="baseUrl" type="url" /></label>
+    <label>Importer token<input id="token" type="password" placeholder="jp_…" autocomplete="off" /></label>
+    <button id="save" class="primary">Save &amp; test</button>
+    <p id="settingsMsg" class="msg"></p>
+  </section>
+
+  <section id="main" hidden>
+    <p id="status" class="mute">Reading this page…</p>
+    <ul id="preview"></ul>
+    <label id="detailsRow" class="check" hidden><input id="details" type="checkbox" checked /> Also read full job descriptions (better scores, a few seconds slower)</label>
+    <button id="send" class="primary" hidden>Send to JobPilot</button>
+    <p id="result" class="msg"></p>
+    <div id="help" class="mute small" hidden>
+      Open a job search on <a data-open="https://www.bayt.com/en/international/jobs/">Bayt</a>,
+      <a data-open="https://www.gulftalent.com/jobs">GulfTalent</a> or
+      <a data-open="https://wuzzuf.net/search/jobs/">Wuzzuf</a> — or any single job page (LinkedIn, Glassdoor, Naukrigulf, company career sites) — then click this icon again.
+      Tip: JobPilot’s Jobs page has ready-made search links.
+    </div>
+  </section>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -7,6 +7,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   passwordHash: text("password_hash").notNull(),
+  importTokenHash: text("import_token_hash"), // sha256 of the browser-importer token
+  importTokenCreatedAt: timestamp("import_token_created_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -14,4 +14,4 @@ Production runs on **Vercel** (team "Muslim Tech", project `jobpilot` (domain jo
 - The Playwright worker in `worker/` can't run on Vercel; it's kept for local experiments only.
 
 ## Source access from Vercel (checked Nov 21, 2026)
-LinkedIn, Remotive, Arbeitnow, Himalayas, Jobicy and Remote OK respond to server requests. Bayt, GulfTalent and Wuzzuf return HTTP 403 to Vercel's servers (bot protection), so the app labels them "blocked" and their quick-search links remain. Check any time at `/api/status` (cached 6 h).
+LinkedIn, Remotive, Arbeitnow, Himalayas, Jobicy and Remote OK respond to server requests. Bayt, GulfTalent and Wuzzuf return HTTP 403 to Vercel's servers (bot protection), so the app labels them "blocked"; their jobs come in through the browser importer extension instead. Check any time at `/api/status` (cached 6 h).

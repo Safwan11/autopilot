@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { LayoutDashboard, Briefcase, KanbanSquare, UserRound, SlidersHorizontal, MessageSquareText, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Briefcase, KanbanSquare, UserRound, SlidersHorizontal, MessageSquareText, Settings, LogOut, Menu, X, Puzzle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
 import { logout } from "@/app/actions/auth";
@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/profile", label: "Profile & CV", icon: UserRound },
   { href: "/preferences", label: "Preferences", icon: SlidersHorizontal },
   { href: "/answers", label: "Answer library", icon: MessageSquareText },
+  { href: "/importer", label: "Browser importer", icon: Puzzle },
 ];
 
 export function Nav({ name, email, counts }: { name: string; email: string; counts: Record<string, number> }) {

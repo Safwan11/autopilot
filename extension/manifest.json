@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "JobPilot Importer",
+  "version": "1.0.0",
+  "description": "Send jobs from Bayt, GulfTalent, Wuzzuf and other job sites to your JobPilot account, scored against your CV.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Send jobs to JobPilot",
+    "default_icon": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png" }
+  },
+  "icons": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "permissions": ["activeTab", "scripting", "storage"]
+}
