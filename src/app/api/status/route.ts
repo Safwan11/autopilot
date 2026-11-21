@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { AUTO_SOURCES } from "@/lib/sources";
 import { COUNTRIES } from "@/lib/countries";
 
-// Public health check of each automatic source. Cached for 6 hours so it never hammers the sites.
-export const revalidate = 21600;
-export const dynamic = "force-static";
+// Public health check of each automatic source, run from the live servers.
+// The CDN caches the answer for 30 minutes so it never hammers the sites.
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET() {
@@ -22,5 +22,8 @@ export async function GET() {
       }
     }),
   );
-  return NextResponse.json({ checkedAt: new Date().toISOString(), results });
+  return NextResponse.json(
+    { checkedAt: new Date().toISOString(), region: process.env.VERCEL_REGION ?? null, results },
+    { headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=600" } },
+  );
 }
