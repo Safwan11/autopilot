@@ -1,70 +1,49 @@
-# AUTOPILOT ? AI Job Search & Automated Application Agent
+# Autopilot — AI job search agent
 
-A full-stack web application that acts as a personal AI job-search and job-application agent.
-Upload your CV once, configure target countries/cities/titles, and let the agent discover, score,
-and (where permitted) submit applications ? producing a detailed 8-worksheet Excel workbook after every run.
+Live: https://autopilot-theta-eight.vercel.app
+
+Upload your CV once. Autopilot builds your profile, searches job boards, scores every role against you, drafts cover letters and tracks your applications.
+
+## Features
+- **Accounts** — email + password sign-up, database-backed sessions, every record scoped to its owner.
+- **CV → profile** — PDF/DOCX/TXT parsing: name, contact, titles, ~150-skill dictionary, years of experience, languages, summary. Fully editable.
+- **Preferences** — target titles, locations, remote/hybrid/on-site, exclusions (keywords & companies), job age limit, sources, daily auto-search.
+- **Job search** — Remotive, Arbeitnow, Himalayas, Jobicy, Remote OK in parallel, with de-duplication, freshness filter and per-source status. One-click deep links to LinkedIn, Indeed, Bayt, GulfTalent, Naukrigulf and Google Jobs.
+- **Matching** — 0–100 score from skills (45%), title (30%), location & mode (15%), seniority (10%), with matched skills, gaps and an explanation. With `ANTHROPIC_API_KEY`, Claude re-scores the top 10 of each search.
+- **Jobs board** — tabs (open / saved / applied / hidden), search, score/mode/source filters, sort, pagination.
+- **Apply assistant** — cover letter (Claude or template), saved-answer library, “I've applied” tracking.
+- **Application tracker** — statuses, follow-up reminders, notes, contacts, manual entries.
+- **Excel export** — Summary, Jobs, Applications, Searches and Answers sheets.
 
 ## Stack
-- **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- **Backend**: Next.js API routes (Node.js/TypeScript)
-- **Database**: Prisma ORM + SQLite (dev). Swap to PostgreSQL for production (see below).
-- **AI**: Provider-independent (Claude or OpenAI) via env vars; falls back to a heuristic scorer if no key.
-- **Browser automation**: Playwright (Chromium) ? local Windows worker with persistent sessions.
-- **Excel**: ExcelJS ? real `.xlsx` with 8 worksheets, formulas, dropdowns, conditional formatting, hyperlinks.
-- **CV parsing**: pdf-parse + mammoth (PDF/DOCX).
+Next.js 16 (App Router, server actions) · React 19 · Tailwind CSS 4 · Drizzle ORM · PostgreSQL (Neon) · ExcelJS · pdf-parse · mammoth.
 
-## Quick start
+## Environment variables
+| Name | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | yes | Postgres connection (pooled is fine) |
+| `DATABASE_URL_UNPOOLED` | no | Direct connection used for migrations |
+| `ANTHROPIC_API_KEY` | no | Claude scoring + cover letters |
+| `ANTHROPIC_MODEL` | no | Defaults to `claude-haiku-5-5` |
+| `CRON_SECRET` | no | Enables the daily search (`vercel.json` cron → `/api/cron`) |
+
+## Development
 ```bash
 npm install
-npx playwright install chromium   # one-time
-npx prisma migrate dev --name init
+export DATABASE_URL=postgres://user:pass@localhost:5432/autopilot
+npm run db:migrate   # apply migrations in ./drizzle
 npm run dev
 ```
-Open http://localhost:3000.
+Change the schema in `src/db/schema.ts`, then `npm run db:generate` to create a migration. Builds run migrations automatically (`npm run build`).
 
-## Environment variables (.env)
+## Project layout
 ```
-DATABASE_URL="file:./dev.db"
-# Optional AI keys (heuristic scorer used if absent):
-ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-sonnet-4-5
-# or
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+src/app/(auth)        sign in / sign up
+src/app/(app)         dashboard, jobs, job detail, applications, profile, preferences, answers, account
+src/app/actions       server actions (auth, settings, jobs, tracker)
+src/app/api           cv upload, search, excel export, cron
+src/lib               cv-parser, skills, sources, matcher, search, cover-letter, excel-export, auth, ai
+src/db                Drizzle schema + client
+drizzle/              SQL migrations
+worker/               optional local Playwright form-filler (not deployed)
 ```
-
-## Features implemented
-- CV upload (PDF/DOCX) + parsing ? structured professional profile (skills, titles, contact)
-- Job discovery from real public APIs: Remotive, Arbeitnow, Himalayas (336 jobs in test run)
-- AI job matching (0-100 score, classification, strong skills, missing reqs, eligibility)
-- Deduplication by source URL
-- Application tracking (status, attempts, answers)
-- Answer library (verified Q&A)
-- Employer database
-- Agent run tracking with logs
-- **Excel export with 8 worksheets**: Open Jobs, Other Skill Matches, Applications Submitted,
-  Application Attempts, Other Skill & Career Opportunities, Summary (with charts-ready breakdowns),
-  Sources Checked, Follow-Ups ? with formulas, dropdowns, conditional formatting, hyperlinks
-- Browser worker (Playwright) with generic form-filling, file upload, screenshots, apply-click
-- Dashboard: overview stats, CV upload, run trigger, job table, Excel download
-
-## Switching to PostgreSQL (production)
-1. Install PostgreSQL (e.g. via the EnterpriseDB installer or a managed service like Neon/Supabase).
-2. Change `prisma/schema.prisma`: `provider = "postgresql"`.
-3. Update `.env`: `DATABASE_URL="postgresql://user:pass@host:5432/autopilot"`.
-4. Run `npx prisma migrate deploy`.
-
-## Architecture
-```
-Web Dashboard  ->  Next.js API routes  ->  Prisma (SQLite/Postgres)
-                      |
-                      +-> AI Matcher (Claude/OpenAI)
-                      +-> Job Discovery (public APIs)
-                      +-> Excel Export (ExcelJS)
-                      +-> Browser Worker (Playwright)
-```
-
-## Notes on automation ethics
-The browser worker uses real Playwright against real sites. It never bypasses CAPTCHAs or bot protection,
-never creates accounts without permission, and never claims submission without website confirmation.
-Sites that prohibit automation fall back to assisted mode.

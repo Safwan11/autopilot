@@ -1,14 +1,14 @@
-# Deploy AUTOPILOT (Vercel + Neon Postgres)
+# Deploying Autopilot
 
-Production runs on **Vercel** with a **Neon Postgres** database added from Vercel's Storage tab.
+Production runs on **Vercel** (team "Muslim Tech", project `autopilot`) with a **Neon Postgres** database (`autopilot-db`) connected from Vercel's Storage tab. Every push to `main` deploys automatically.
 
-1. Vercel -> Add New -> Project -> import `Safwan11/autopilot` (framework: Next.js, defaults).
-2. Project -> Storage -> Create Database -> Neon (free) -> connect to the project.
-   This injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct), which `prisma/schema.prisma` uses.
-3. Redeploy. The build runs `prisma generate && prisma db push && next build`, so tables are created automatically.
-4. Optional: add `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) for AI matching; without it a heuristic scorer is used.
+- Neon injects `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
+- `npm run build` runs `scripts/migrate.mjs` first, so new tables/columns are applied on deploy.
+
+## Optional extras (Vercel → Project → Settings → Environment Variables, then redeploy)
+- `ANTHROPIC_API_KEY` — Claude-powered match scoring and cover letters.
+- `CRON_SECRET` — any long random string. Turns on the daily 05:00 UTC search for users who enable it in Preferences.
 
 ## Notes
-- CVs are parsed in memory; only the extracted text is stored. Excel reports are generated on demand at `/api/excel?runId=...`.
-- The Playwright browser worker (auto-apply) cannot run on Vercel; run it locally against the deployed database.
-- Local dev: run a Postgres (or use the Neon dev branch) and set both env vars in `.env`.
+- Old Prisma tables from v1 (`"User"`, `"Job"`, …) are left untouched in the database; v2 uses new lowercase tables.
+- The Playwright worker in `worker/` can't run on Vercel; it's kept for local experiments only.

@@ -1,119 +1,92 @@
-"use client";
-import { useState, useEffect } from "react";
+import { redirect } from "next/navigation";
+import { ArrowRight, FileText, Radar, Gauge, PenLine, KanbanSquare, FileSpreadsheet } from "lucide-react";
+import { getUser } from "@/lib/auth";
+import { Logo } from "@/components/logo";
+import { ButtonLink, Notice } from "@/components/ui";
 
-export default function Home() {
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [runs, setRuns] = useState<any[]>([]);
-  const [running, setRunning] = useState(false);
-  const [lastRun, setLastRun] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+const FEATURES = [
+  { icon: FileText, title: "Reads your CV", body: "Upload a PDF or Word CV. Autopilot pulls out your titles, skills, experience and contact details into a profile you can edit." },
+  { icon: Radar, title: "Searches for you", body: "Runs your target titles across Remotive, Arbeitnow, Himalayas, Jobicy and Remote OK, plus one-click searches on LinkedIn, Bayt and GulfTalent." },
+  { icon: Gauge, title: "Scores every role", body: "Each job gets a 0–100 match on skills, title, location and seniority, with the gaps spelled out. Add an AI key for Claude-powered scoring." },
+  { icon: PenLine, title: "Drafts cover letters", body: "Tailored letters from your real experience, plus a library of saved answers for those repeated application questions." },
+  { icon: KanbanSquare, title: "Tracks applications", body: "Applied, interviewing, offer, rejected. Follow-up reminders so nothing goes quiet without you noticing." },
+  { icon: FileSpreadsheet, title: "Exports to Excel", body: "One click gives you a formatted workbook of every job, application and search, ready to filter or share." },
+];
 
-  async function load() {
-    const j = await fetch("/api/jobs").then((r) => r.json()).catch(() => ({ jobs: [] }));
-    setJobs(j.jobs || []);
-    const r = await fetch("/api/runs").then((r) => r.json()).catch(() => ({ runs: [] }));
-    setRuns(r.runs || []);
-  }
-  useEffect(() => { load(); }, []);
-
-  async function uploadCv(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    setMessage("Uploading & parsing CV...");
-    const res = await fetch("/api/cv", { method: "POST", body: fd });
-    const data = await res.json();
-    setMessage(res.ok ? `CV uploaded. Skills: ${(data.parsed?.skills || []).join(", ")}` : `Error: ${data.error}`);
-    load();
-  }
-
-  async function startRun() {
-    setRunning(true);
-    setMessage("Agent running: discovering jobs, scoring, generating Excel...");
-    const res = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "SEARCH_AND_SHORTLIST" }) });
-    const data = await res.json();
-    setRunning(false);
-    if (res.ok) { setLastRun(data.runId); setMessage(`Run complete. ${data.jobsFound} jobs found. Report ready.`); load(); }
-    else setMessage(`Error: ${data.error}`);
-  }
-
+export default async function Home(props: PageProps<"/">) {
+  if (await getUser()) redirect("/dashboard");
+  const sp = await props.searchParams;
   return (
-    <main className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Autopilot ? AI Job Search & Application Agent</h1>
-          <p className="text-slate-600">Upload your CV once. Let the agent search, match, apply, and report.</p>
-        </header>
+    <div className="min-h-dvh">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+        <Logo />
+        <div className="flex gap-2">
+          <ButtonLink href="/login" variant="ghost">Sign in</ButtonLink>
+          <ButtonLink href="/signup">Get started</ButtonLink>
+        </div>
+      </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Stat label="Jobs discovered" value={jobs.length} />
-          <Stat label="Excellent matches" value={jobs.filter((j) => (j.matchScore ?? 0) >= 90).length} />
-          <Stat label="Strong matches" value={jobs.filter((j) => (j.matchScore ?? 0) >= 80 && (j.matchScore ?? 0) < 90).length} />
-          <Stat label="Runs" value={runs.length} />
-        </section>
-
-        <section className="bg-white rounded-xl shadow p-5 mb-6">
-          <h2 className="text-xl font-semibold mb-3">1. Upload CV</h2>
-          <form onSubmit={uploadCv} className="flex gap-3 items-center">
-            <input type="file" name="file" accept=".pdf,.docx" required className="border rounded p-2" />
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload & Parse</button>
-          </form>
-        </section>
-
-        <section className="bg-white rounded-xl shadow p-5 mb-6">
-          <h2 className="text-xl font-semibold mb-3">2. Run Agent</h2>
-          <button onClick={startRun} disabled={running} className="bg-emerald-600 text-white px-5 py-2 rounded hover:bg-emerald-700 disabled:opacity-50">
-            {running ? "Running..." : "Start Search & Shortlist Run"}
-          </button>
-          {lastRun && (
-            <a href={`/api/excel?runId=${lastRun}`} className="ml-4 text-blue-600 underline" download>
-              Download Excel Report
-            </a>
-          )}
-          {message && <p className="mt-3 text-sm text-slate-700">{message}</p>}
-        </section>
-
-        <section className="bg-white rounded-xl shadow p-5">
-          <h2 className="text-xl font-semibold mb-3">Discovered Jobs ({jobs.length})</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-100">
-                <tr>
-                  <th className="p-2 text-left">Score</th>
-                  <th className="p-2 text-left">Title</th>
-                  <th className="p-2 text-left">Company</th>
-                  <th className="p-2 text-left">Location</th>
-                  <th className="p-2 text-left">Source</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Link</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.slice(0, 50).map((j) => (
-                  <tr key={j.id} className="border-t">
-                    <td className="p-2 font-bold">{j.matchScore ?? "-"}</td>
-                    <td className="p-2">{j.title}</td>
-                    <td className="p-2">{j.company}</td>
-                    <td className="p-2">{j.location}</td>
-                    <td className="p-2">{j.source}</td>
-                    <td className="p-2">{j.status}</td>
-                    <td className="p-2"><a href={j.sourceUrl} target="_blank" className="text-blue-600">open</a></td>
-                  </tr>
-                ))}
-                {jobs.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-slate-500">No jobs yet. Upload a CV and run the agent.</td></tr>}
-              </tbody>
-            </table>
+      <main className="mx-auto max-w-6xl px-5">
+        {sp.deleted && <div className="mb-6"><Notice tone="good">Your account and all its data were deleted.</Notice></div>}
+        <section className="grid items-center gap-12 py-14 lg:grid-cols-[1.1fr_1fr] lg:py-20">
+          <div>
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line-2 bg-card px-3 py-1 text-xs font-medium text-ink-2">
+              <span className="size-1.5 rounded-full bg-accent" /> Your personal job-search agent
+            </p>
+            <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+              Upload your CV once.<br />Let Autopilot find the jobs worth applying to.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-ink-2">
+              It searches job boards, scores every role against your experience, writes the cover letter and keeps track of where you applied.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <ButtonLink href="/signup" className="h-11 px-5 text-[15px]">Create free account <ArrowRight className="size-4" /></ButtonLink>
+              <ButtonLink href="/login" variant="secondary" className="h-11 px-5 text-[15px]">I have an account</ButtonLink>
+            </div>
           </div>
+          <PreviewCard />
         </section>
-      </div>
-    </main>
+
+        <section className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="bg-card p-6">
+              <f.icon className="size-5 text-accent" />
+              <h3 className="mt-3 font-semibold">{f.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-mute">{f.body}</p>
+            </div>
+          ))}
+        </section>
+
+        <footer className="py-12 text-center text-sm text-mute">Autopilot · built by Muslim Tech</footer>
+      </main>
+    </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function PreviewCard() {
+  const rows = [
+    { t: "Application Support Engineer", c: "Fintech · Remote, EMEA", s: 91 },
+    { t: "QA Analyst (ERP)", c: "Retail group · Riyadh", s: 84 },
+    { t: "Oracle Fusion Support Consultant", c: "Consultancy · Dubai", s: 77 },
+    { t: "Senior SDET", c: "SaaS · Remote, US", s: 48 },
+  ];
   return (
-    <div className="bg-white rounded-xl shadow p-4">
-      <div className="text-2xl font-bold text-slate-900">{value}</div>
-      <div className="text-sm text-slate-500">{label}</div>
+    <div className="rounded-2xl border border-line bg-card p-2 shadow-[0_30px_60px_-30px_rgba(21,23,28,0.25)]">
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="text-sm font-semibold">Top matches</span>
+        <span className="num text-xs text-mute">124 found · 18 strong</span>
+      </div>
+      <ul className="divide-y divide-line">
+        {rows.map((r) => (
+          <li key={r.t} className="flex items-center gap-3 px-4 py-3">
+            <span className={`num flex size-10 items-center justify-center rounded-lg border text-sm font-semibold ${r.s >= 70 ? "border-accent/40 bg-accent-soft text-accent-2" : "border-warn/40 bg-warn-soft text-warn"}`}>{r.s}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium">{r.t}</span>
+              <span className="block truncate text-xs text-mute">{r.c}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
