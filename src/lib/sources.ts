@@ -120,7 +120,7 @@ export const SOURCES: SourceDef[] = [
         remoteType: "Remote",
         employmentType: j.employmentType || null,
         salary: fmtSalary(j.minSalary, j.maxSalary, j.currency),
-        tags: [...(j.categories ?? []), ...(j.skills ?? [])].slice(0, 15),
+        tags: [...(j.categories ?? []), ...(j.skills ?? [])].map((t: string) => String(t).replace(/-/g, " ")).slice(0, 15),
         description: htmlToText(j.description ?? j.excerpt ?? ""),
         postedAt: toDate(j.pubDate),
       }));
