@@ -177,7 +177,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
                 {Object.entries(lastRun.sourceStats).map(([name, s]) => (
                   <li key={name} className="flex justify-between gap-2">
                     <span className="text-ink-2">{name}</span>
-                    <span className={cn("num text-xs", s.error ? "text-bad" : "text-mute")}>{s.error ? "no response" : `${s.found} found · ${s.kept} new`}</span>
+                    <span className={cn("num text-xs", s.error ? "text-bad" : "text-mute")}>{s.error ? (/40[13]|429/.test(s.error) ? "blocked" : "no response") : `${s.found} found · ${s.kept} new`}</span>
                   </li>
                 ))}
               </ul>

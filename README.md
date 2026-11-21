@@ -1,6 +1,6 @@
 # JobPilot — AI job search agent
 
-Live: https://jobpilot-app.vercel.app
+Live: https://jobpilot-mena.vercel.app
 
 Upload your CV once. JobPilot builds your profile, searches job boards, scores every role against you, drafts cover letters and tracks your applications.
 

@@ -37,10 +37,13 @@ export function RunSearchButton({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Search failed");
       const r: RunResult = data.run;
-      const failed = Object.entries(r.sourceStats).filter(([, v]) => v.error).map(([k]) => k);
+      const blocked = Object.entries(r.sourceStats).filter(([, v]) => v.error && /40[13]|429/.test(v.error)).map(([k]) => k);
+      const failed = Object.entries(r.sourceStats).filter(([k, v]) => v.error && !blocked.includes(k)).map(([k]) => k);
       setResult({
-        tone: failed.length && !r.jobsFound ? "warn" : "good",
-        text: `Found ${r.jobsFound} jobs, ${r.jobsNew} new, ${r.jobsMatched} good matches.${failed.length ? ` ${failed.join(", ")} didn't respond this time.` : ""}`,
+        tone: (failed.length || blocked.length) && !r.jobsFound ? "warn" : "good",
+        text: `Found ${r.jobsFound} jobs, ${r.jobsNew} new, ${r.jobsMatched} good matches.` +
+          (blocked.length ? ` ${blocked.join(", ")} blocked automated search — use their links under “Search other sites”.` : "") +
+          (failed.length ? ` ${failed.join(", ")} didn't respond this time.` : ""),
       });
       router.refresh();
     } catch (e) {
